@@ -27,7 +27,7 @@ O bot integra diferentes módulos que se comunicam para oferecer uma experiênci
 
 A seguir, um exemplo do design do sistema que ilustra a arquitetura do projeto:
 
-![System Designer](images\ragbotsystem.png)
+![System Designer](https://raw.githubusercontent.com/Natsuzera/DiscordAI-Bot/master/imagens/ragbotsystem.png)
 
 *Obs.: Substitua "caminho/para/sua-imagem.png" pelo caminho correto da imagem do seu designer de sistema.*
 
