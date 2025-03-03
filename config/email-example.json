@@ -1,0 +1,9 @@
+{
+    "email": "seuemail@exemplo.com",
+    "password": "SUA_SENHA de APP",
+    "remetentes": [
+      "exemplo1@dominio.com",
+      "exemplo2@dominio.com"
+    ]
+}
+  

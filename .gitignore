@@ -1,0 +1,9 @@
+env
+__pycache__/
+config/email.json
+config/gemini-config.json
+config/discord-credentials.json
+data/chroma.db
+src/BotDiscord/texto.txt
+src/BotDiscord/images/valores.png
+src/BotDiscord/comprovantes/Comprovante_103168347055.pdf

@@ -1,0 +1,1 @@
+aqui vai o banco de dados vetorial, no caso estamos usando o chroma.db
