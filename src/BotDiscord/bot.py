@@ -14,15 +14,26 @@ if parent_dir not in sys.path:
 
 from embbedings import gerar_input_embeddings
 from AI_service.onlineAI import process_chatbot_message, process_unread_email_response, process_pagamento
-from get_credentials import get_discord_credentials
+from get_DiscordConfigs import get_discord_credentials, get_discord_texts, get_discord_comandos
+from Pagamentos.pagamentos import SistemaPagamentos
 
 # Define os intents necessários
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-#Pegando as credenciais do discord
+#Pegando as credenciais e configurações do Discord
 credentials = get_discord_credentials()
+texts = get_discord_texts()
+comandos = get_discord_comandos()
+
+# Inicializando a classe de pagamentos
+pagamentos = SistemaPagamentos("pagamentos.csv")
+
+meses_portugues = [
+            "janeiro", "fevereiro", "marco", "abril", "maio", "junho",
+            "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
+            ]
 
 # Cria o cliente do Discord com CommandTree para os slash commands
 class ClientBot(discord.Client):
@@ -31,8 +42,10 @@ class ClientBot(discord.Client):
         self.tree = app_commands.CommandTree(self)
     
     async def setup_hook(self):
+       
         # ID do servidor onde os comandos serão sincronizados
         guild = discord.Object(id=credentials["id_servidor"])
+        self.tree.clear_commands(guild=guild)
         # Copia os comandos globais para o guild específico
         self.tree.copy_global_to(guild=guild)
         # Sincroniza os comandos com o guild para que apareçam instantaneamente
@@ -42,25 +55,40 @@ class ClientBot(discord.Client):
 client = ClientBot()
 
 # Tarefa agendada para enviar mensagem diariamente às 08:00
-@tasks.loop(time=datetime.time(hour=18, minute=20, second=0, tzinfo=pytz.timezone('America/Sao_Paulo')))
+@tasks.loop(time=datetime.time(hour=15, minute=15, second=0, tzinfo=pytz.timezone('America/Sao_Paulo')))
+#@tasks.loop(minutes=1)
 async def mensagem_diaria():
+    tz = pytz.timezone('America/Sao_Paulo')
+    now = datetime.datetime.now(tz)
     # ID do canal de agendamento
     channel = client.get_channel(credentials["channel_agendamento_id"])  # Ex: 123456789012345678
-    if channel:
-        print("Mensagem diária enviada com sucesso!")
-        await channel.send("""@everyone 📢 **Já experimentou nossa IA?** 📢  
-
-                            Com ela, você encontra **informações sobre filmes e séries** em segundos! 🎬✨  
-
-                            🔍 **Quer saber mais sobre um título específico?** Digite **/chatbot** e descubra!  
-                            🔑 **Esqueceu a senha de algum serviço?** Pergunte e receba ajuda na hora!  
-                            📦 **Dúvidas sobre o combo?** Tire todas as suas questões por aqui!  
-
-                            Simples, rápido e prático. Teste agora! 🚀💬"""
-                        )
-
+    if now.day in [6, 12]:
+        
+        if channel:
+            
+            mes_atual = meses_portugues[now.month - 1]
+            atrasados = pagamentos.verificar_pagamento(mes=mes_atual)
+            guild_server = channel.guild
+            mencoes = []
+            for username in atrasados.split():
+                print(f"Verificando usuário {username}")
+                #pegando o id do usuario no servidor
+                member = guild_server.get_member_named(username)
+                if member:
+                    mencoes.append(member.mention)
+                else:
+                    print(f"Usuário {username} não encontrado no servidor")
+            
+            resultado = " ".join(mencoes)
+            await channel.send(f"{resultado} verifiquei que o pagamento ainda não foi realizado, a data ideal para pagamento é dia 10")         
     else:
-        print("Canal não encontrado!")
+        if channel:
+            print("Mensagem diária enviada com sucesso!")
+            mensagem = texts["mensagens_usuario"]["mensagem_diaria"]
+            await channel.send(mensagem)
+
+        else:
+            print("Canal não encontrado!")
 
 # Evento disparado quando o bot estiver pronto
 @client.event
@@ -77,8 +105,10 @@ async def on_member_join(member: discord.Member):
     channel_id = credentials["channel_welcome_id"]  #ID do canal de boas-vindas 
     channel = member.guild.get_channel(channel_id)
     if channel:
+        mensagem_boas_vindas = texts["mensagens_usuario"]["boas_vindas"]
+        mensagem_boas_vindas = mensagem_boas_vindas.replace("{usuario}", member.mention)
         print(f"[INFO] Canal encontrado: {channel.name}")
-        await channel.send(f"Seja bem-vindo(a) ao servidor, Espere ate que seu registro seja concluido, {member.mention}! 🎉")
+        await channel.send(mensagem_boas_vindas)
     else:
         print(f"[ERRO] Canal com ID {channel_id} não encontrado.")
 
@@ -94,15 +124,34 @@ async def on_member_update(before: discord.Member, after: discord.Member):
         channel = after.guild.get_channel(channel_id)
 
         if channel:
+            #================ deixar os cargos dinamicos tambem ================
             if novo_cargo.name == "ComboCompleto (CC)" or novo_cargo.name == "MeioCombo (MC)" or novo_cargo.name == "Netflix-Only":
-                await channel.send(f"Parabéns, {after.mention}! você foi registrado com sucesso, e seu acesso ao {novo_cargo.name}! foi liberado 🎉\nAcesse o canal principal e digite /comandos")
+                mensagem = texts["mensagens_usuario"]["registro_concluido"]
+                mensagem = mensagem.replace("{usuario}", after.mention)
+                mensagem = mensagem.replace("{nome_cargo}", novo_cargo.name)
+                print(pagamentos.adicionar_usuario(username=after.name, cargo=novo_cargo.name))
+                await channel.send(mensagem)
         
         else:
             print(f"[ERRO] Canal com ID {channel_id} não encontrado.")
-            
 
+# Evento disparado quando um membro é removido
+@client.event
+async def on_member_remove(member: discord.Member):
+    print(f"[EVENTO] Usuário {member.name} (ID: {member.id}) saiu da guild {member.guild.name} (ID: {member.guild.id})")
+    channel_id = credentials["channel_welcome_id"]  #ID do canal de boas-vindas
+    channel = member.guild.get_channel(channel_id)
+    if channel:
+        mensagem_despedida = texts["mensagens_usuario"]["usuario_removido"]
+        mensagem_despedida = mensagem_despedida.replace("{usuario}", member.mention)
+        print(pagamentos.remover_usuario(username=member.name))
+        await channel.send(mensagem_despedida)
+    else:
+        print(f"[ERRO] Canal com ID {channel_id} não encontrado.")
+            
+#======================================= COMANDOS // DEIXAR NOME E DESCRIÇÃO DINAMICOS ========================================
 # Comando chatbot usando IA da gemini
-@client.tree.command(name="chatbot", description="Chatbot sobre dúvidas")
+@client.tree.command(name=comandos["chatbot"]["name"], description=comandos["chatbot"]["description"])
 async def chatbot(interaction: discord.Interaction, mensagem: str):
     texto = f"o cargo do usuario é {interaction.user.top_role.name}\n{mensagem}"
     contexto = gerar_input_embeddings(texto)
@@ -113,7 +162,7 @@ async def chatbot(interaction: discord.Interaction, mensagem: str):
     print(f"o usuario {interaction.user.name} fez a pergunta: {mensagem} e teve a resposta:\n{resultado}")
     await interaction.followup.send(resultado)
 
-@client.tree.command(name="codigo", description="Busca o código de acesso no email")
+@client.tree.command(name=comandos["emailAI"]["name"], description=comandos["emailAI"]["description"])
 async def codigo(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
     resultado = process_unread_email_response()
@@ -128,14 +177,22 @@ async def valores(interaction: discord.Interaction):
 async def cargo(interaction: discord.Interaction):
     await interaction.response.send_message(f'Seu cargo é {interaction.user.top_role.name}')
 
-@client.tree.command(name="comprovante", description="Envie o comprovante de pagamento")
+@client.tree.command(name=comandos["anexoAI"]["name"], description=comandos["anexoAI"]["description"])
 async def comprovante(interaction: discord.Interaction, anexo: discord.Attachment):
     await interaction.response.defer(ephemeral=True)
     save_path = f"src/BotDiscord/comprovantes/{anexo.filename}"
+    print(f"Salvando o comprovante do usuario: {interaction.user.name} em {save_path}")
     await anexo.save(save_path)
     await interaction.followup.send(f"Comprovante recebido, verficando o pagamento...")
-    resultado = process_pagamento(path=save_path, cargo=interaction.user.top_role.name)
-    await interaction.followup.send(resultado)
+    resultado = process_pagamento(path=save_path, cargo=interaction.user.name)
+    print(f"Resultado do pagamento: {resultado}")
+    if resultado == "Pagamento confirmado com sucesso":
+        mes_atual = meses_portugues[datetime.datetime.now().month - 1]
+        print(pagamentos.adicionar_pagamento(username=interaction.user.name, mes=mes_atual))
+    else:
+        print("Pagamento não atualizado na base de dados")
+
+    await interaction.followup.send(resultado, ephemeral=True)
 
     
 @client.tree.command(name="comandos", description="Lista de comandos")

@@ -1,0 +1,24 @@
+{
+  "mensagens_sistema": {
+    "bot_online": "Bot está online como {nome_bot}",
+    "comandos_sincronizados": "Comandos sincronizados com a guild {id_guild}",
+    "mensagem_diaria_sucesso": "Mensagem diária enviada com sucesso!",
+    "canal_nao_encontrado": "Canal não encontrado!",
+    "novo_membro_log": "[EVENTO] Novo membro entrou: {nome_usuario} (ID: {id_usuario}) na guild {nome_guild} (ID: {id_guild})",
+    "canal_encontrado": "[INFO] Canal encontrado: {nome_canal}",
+    "canal_nao_encontrado_erro": "[ERRO] Canal com ID {id_canal} não encontrado.",
+    "usuario_recebeu_cargo": "[EVENTO] Usuário {nome_usuario} (ID: {id_usuario}) recebeu o cargo {nome_cargo}",
+    "contexto_gerado": "contexto gerado: {contexto}",
+    "log_pergunta_resposta": "o usuario {nome_usuario} fez a pergunta: {mensagem} e teve a resposta:\n{resultado}"
+  },
+  "mensagens_usuario": {
+    "mensagem_diaria": "@everyone 📢 **Já experimentou nossa IA?** 📢  \n\nCom ela, você encontra **informações sobre filmes e séries** em segundos! 🎬✨  \n\n🔍 **Quer saber mais sobre um título específico?** Digite **/chatbot** e descubra!  \n🔑 **Esqueceu a senha de algum serviço?** Pergunte e receba ajuda na hora!  \n📦 **Dúvidas sobre o combo?** Tire todas as suas questões por aqui!  \n\nSimples, rápido e prático. Teste agora! 🚀💬",
+    "boas_vindas": "Seja bem-vindo(a) ao servidor, Espere ate que seu registro seja concluido, {usuario}! 🎉",
+    "registro_concluido": "Parabéns, {usuario}! você foi registrado com sucesso, e seu acesso ao {nome_cargo}! foi liberado 🎉\nAcesse o canal principal e digite /comandos",
+    "valores": "Aqui estão os valores do combo: ",
+    "cargo": "Seu cargo é {nome_cargo}",
+    "comprovante_recebido": "Comprovante recebido, verficando o pagamento...",
+    "lista_comandos": "Comandos:\n/chatbot - Interaja com o nosso chatbot para obter respostas rápidas e tirar duvidas sobre o combo.\n/valores - Confira os valores das assinaturas.\n/comandos - Exibe esta lista de comandos disponíveis.\n/comprovante - Envie seu comprovante de pagamento.",
+    "usuario_removido": "O usuário {usuario} não faz mais parte do combo. Fiquem atento que provavelmente ira ocorrer uma mudança de senhas."
+  }
+}

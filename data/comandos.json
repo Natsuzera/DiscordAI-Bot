@@ -1,0 +1,18 @@
+{
+    "chatbot": {
+        "name": "chatbot",
+        "description": "Comando para conversar com nossa IA e tirar dúvidas" 
+    },
+    "anexoAI": {
+        "name": "comprovante",
+        "description": "Comando para enviar o comprovante de pagamento"
+    },
+    "emailAI": {
+        "name": "codigo",
+        "description": "Comando para solicitar o código de acesso no email"
+    },
+    "getArchive": {
+        "name": "valores",
+        "description": "Comando para solicitar os valores dos planos"
+    }
+}
