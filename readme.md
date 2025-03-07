@@ -27,9 +27,7 @@ O bot integra diferentes módulos que se comunicam para oferecer uma experiênci
 
 A seguir, um exemplo do design do sistema que ilustra a arquitetura do projeto:
 
-![System Designer](images\ragbotsystem.png)
-
-*Obs.: Substitua "caminho/para/sua-imagem.png" pelo caminho correto da imagem do seu designer de sistema.*
+![System Designer](https://raw.githubusercontent.com/Natsuzera/DiscordAI-Bot/master/images/ragbotsystem.png)
 
 ## Configuração do Projeto
 
@@ -50,12 +48,12 @@ Recomenda-se criar cópias dos arquivos de exemplo com os nomes corretos e inser
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/seu-usuario/seu-repositorio.git
+git clone https://github.com/Natsuzera/DiscordAI-Bot.git
 ```
 
 2. Acesse o diretório do projeto:
 ```bash
-cd seu-repositorio
+cd DiscordAI-Bot
 ```
 
 3. Instale as dependências (certifique-se de ter o ambiente configurado conforme as instruções do seu projeto):
